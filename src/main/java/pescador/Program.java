@@ -5,8 +5,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.TextStyle;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -15,21 +17,45 @@ import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 
 public class Program {
+	//Dias do IF padrão
+	static Integer dAnterior = -5;
+	static Integer dPosterior = 5;
+	
 	public static void main(String[] args) {
 
 		Locale local = new Locale("pt", "BR");
 		LocalDate dataInitial = LocalDate.now(ZoneId.of("America/Sao_Paulo"));
+		
+		List<String> params = Arrays.asList(args);
+
+		params.forEach(p -> {
+			if (p != null) {
+				String[] teste = p.split("=");
+				
+
+				if (teste[0].equalsIgnoreCase("dAnterior")) {
+					dAnterior = Math.negateExact(Integer.parseInt(teste[1]));
+				} else if (teste[0].equalsIgnoreCase("dPosterior")) {
+					dPosterior = Integer.parseInt(teste[1]);
+				}
+
+			}
+			// System.out.println("lojista: " + varejista.getDescricao());
+		});
+		
+		System.out.println("dAnterior: " + dAnterior + " - dPosterior: " + dPosterior);
+		
 
 		List<Lojista> lojistasList = Stream.of(Lojista.values()).collect(Collectors.toList());
 		List<Parceiro> parceirosList = Stream.of(Parceiro.values()).collect(Collectors.toList());
 
 		parceirosList.stream().forEach(p -> {
 
-			System.out.println(p.getDescricao());
+			System.out.println(p.getDescricao().toUpperCase());
 
 			lojistasList.stream().forEach(l -> {
 
-				for (int i = -5; i < 5; i++) {
+				for (int i = dAnterior; i < dPosterior; i++) {
 					LocalDate dataUsada = dataInitial;
 					dataUsada = dataUsada.minusDays(i);
 
@@ -43,7 +69,9 @@ public class Program {
 								+ "x1-1300x400.jpg";
 
 						try {
-							Thread.sleep(2002L);
+							Random aleatorio = new Random();
+							int sleep = aleatorio.nextInt((2901 - 1102) + 1) + 1102;
+							Thread.sleep(sleep);
 						} catch (InterruptedException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
