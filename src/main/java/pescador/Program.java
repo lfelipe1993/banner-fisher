@@ -18,8 +18,8 @@ import org.jsoup.Jsoup;
 
 public class Program {
 	//Dias do IF padrão
-	static Integer dAnterior = -5;
-	static Integer dPosterior = 5;
+	static Integer dAnterior = -3;
+	static Integer dPosterior = 3;
 	
 	public static void main(String[] args) {
 
@@ -57,7 +57,7 @@ public class Program {
 
 				for (int i = dAnterior; i < dPosterior; i++) {
 					LocalDate dataUsada = dataInitial;
-					dataUsada = dataUsada.minusDays(i);
+					dataUsada = dataUsada.plusDays(i);
 
 					String mes = dataUsada.getMonth().getDisplayName(TextStyle.FULL, local);
 
