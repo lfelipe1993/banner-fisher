@@ -10,7 +10,8 @@ import jakarta.ws.rs.core.UriBuilder;
 
 public class TelegramNotifier {
 	private static final String CHAT_ID = "-1001399432278";
-    private static final String TOKEN = "1620921748:AAH3Xm-qANhi_ZQcF-VFIbYoUgKgRUq6dFk";
+	//private static final String CHAT_ID = "-1001317699407";//test
+    private static final String TOKEN = "";
 
     public static void sendNotification(String message) {
     	

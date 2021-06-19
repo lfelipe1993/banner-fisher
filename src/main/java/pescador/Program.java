@@ -1,10 +1,10 @@
 package pescador;
 
-import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.TextStyle;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -12,14 +12,14 @@ import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.jsoup.Connection;
-import org.jsoup.HttpStatusException;
-import org.jsoup.Jsoup;
+import model.DAO.BannersDAO;
+import model.DAO.DAOFactory;
+import model.banners.Banners;
 
 public class Program {
 	//Dias do IF padrão
-	static Integer dAnterior = -3;
-	static Integer dPosterior = 3;
+	static Integer dAnterior = -5;
+	static Integer dPosterior = 5;
 	
 	public static void main(String[] args) {
 
@@ -43,8 +43,12 @@ public class Program {
 			// System.out.println("lojista: " + varejista.getDescricao());
 		});
 		
-		System.out.println("dAnterior: " + dAnterior + " - dPosterior: " + dPosterior);
+		//carregar banners ja visualizados
+		List<Banners> bannersSearched = buscaBanners(dAnterior); 
 		
+		System.out.println("dAnterior: " + dAnterior + " | dPosterior: " + dPosterior);
+		
+		List<String> urlsOfBanners = new ArrayList();
 
 		List<Lojista> lojistasList = Stream.of(Lojista.values()).collect(Collectors.toList());
 		List<Parceiro> parceirosList = Stream.of(Parceiro.values()).collect(Collectors.toList());
@@ -63,7 +67,7 @@ public class Program {
 
 					for (int x = p.getMinPts(); x <= p.getMaxPts(); x++) {
 						String builderUrl = l.getDominio() + dataUsada.getYear() + "/B2B/" + p.getSigla() + "/"
-								+ String.format("%02d", dataUsada.getMonthValue()) + "-" + firstLetterToUpperCase(mes)
+								+ String.format("%02d", dataUsada.getMonthValue()) + "-" + Utils.firstLetterToUpperCase(mes)
 								+ "/" + dataUsada.getYear() + String.format("%02d", dataUsada.getMonthValue())
 								+ String.format("%02d", dataUsada.getDayOfMonth()) + "-" + p.getDescricao() + "-" + x
 								+ "x1-1300x400.jpg";
@@ -77,7 +81,9 @@ public class Program {
 							e.printStackTrace();
 						}
 
-						getBanners(builderUrl);
+						if(BannersSearch.getBanners(builderUrl) == 200) {
+							urlsOfBanners.add(builderUrl);
+						}
 
 					}
 				}
@@ -86,43 +92,50 @@ public class Program {
 
 		});
 		
+		//Remover todos os banners da lista caso haja
+		urlsOfBanners.removeAll(bannersSearched.stream().map(Banners::getUrl).collect(Collectors.toList()));
+		
+		
+		List<Banners> bannersToAddInDb = new ArrayList<>();
+		
+		System.out.println("-----------------BANNERS ENCONTRADOS-----------------");
+		urlsOfBanners.forEach(x -> {
+			bannersToAddInDb.add(new Banners(null,x,null));
+			System.out.println(x);
+		});
+		System.out.println("-----------------------------------------------------");
+		
+		//Salvar banners que nao foram salvos ainda no banco de acordo com a leitura anterior.
+		saveBanners(bannersToAddInDb);
+		
+		
+		System.out.println("--------------------BANNERS NOVOS--------------------");
+		//Envia mensagem dos banners reconhecidos
+		bannersToAddInDb.forEach(x -> {
+			System.out.println(x.getUrl());	
+		});
+		System.out.println("-----------------------------------------------------");
+		
+
+		//Envia mensagem dos banners reconhecidos
+		bannersToAddInDb.forEach(x -> {
+			TelegramNotifier.sendNotification(x.getUrl());
+		});
+		
 		System.out.println("Execução terminada [" + LocalDateTime.now() + "]");
 	}
 
-	public static void getBanners(String url) {
-		Connection.Response response;
-		try {
-			response = Jsoup.connect(url).ignoreContentType(true)
-					.userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.128 Safari/537.36 OPR/75.0.3969.243")
-					.referrer("http://www.google.com.br") 
-					.execute();
-
-			if (response.statusCode() == 200) {
-				System.out.println("ENCONTREI!");
-				TelegramNotifier.sendNotification(url);
-			}else {
-				System.out.println("Não encontrei banner :(");
-			}
-		} catch (HttpStatusException e) {
-			System.out.println(e.getMessage() + " [HttpStatusCode: " + e.getStatusCode() + "]");
-			System.out.println(e.getUrl());
-	    } catch (IOException e) {
-	        // TODO Auto-generated catch block
-	        e.printStackTrace();
-	    }
-
+	public static List<Banners> buscaBanners(Integer daysAgo) {
+		BannersDAO factory = DAOFactory.CreateBannersDao();
+		List<Banners> list = factory.findBanners(daysAgo);
+		return list;
+	}
+	
+	public static void saveBanners(List<Banners> banners) {
+		BannersDAO factory = DAOFactory.CreateBannersDao();
+		
+		banners.forEach(x -> factory.insert(x));
 	}
 
-	public static String firstLetterToUpperCase(String letter) {
-		// second substring contains remaining letters
-		String firstLetter = letter.substring(0, 1);
-		String remainingLetters = letter.substring(1, letter.length());
-
-		// change the first letter to uppercase
-		firstLetter = firstLetter.toUpperCase();
-
-		// join the two substrings
-		return firstLetter + remainingLetters;
-	}
 
 }
