@@ -18,7 +18,7 @@ public class BannersSearch {
 			if (response.statusCode() == 200) {
 				System.out.println(url);
 				System.out.println("ENCONTREI!");
-				System.out.println("---------------------------------------------------------");
+				//System.out.println("---------------------------------------------------------");
 				//TelegramNotifier.sendNotification(url);
 				StatusCodeFinal = response.statusCode();
 			} else {

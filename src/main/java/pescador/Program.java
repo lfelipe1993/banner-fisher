@@ -74,7 +74,7 @@ public class Program {
 
 						try {
 							Random aleatorio = new Random();
-							int sleep = aleatorio.nextInt((2901 - 1102) + 1) + 1102;
+							int sleep = aleatorio.nextInt((2101 - 1002) + 1) + 1002;
 							Thread.sleep(sleep);
 						} catch (InterruptedException e) {
 							// TODO Auto-generated catch block
@@ -83,6 +83,8 @@ public class Program {
 
 						if(BannersSearch.getBanners(builderUrl) == 200) {
 							urlsOfBanners.add(builderUrl);
+							System.out.println("ADICIONADO A LISTAGEM!");
+							System.out.println("---------------------------------------------------------");
 						}
 
 					}
@@ -92,22 +94,21 @@ public class Program {
 
 		});
 		
-		//Remover todos os banners da lista caso haja
-		urlsOfBanners.removeAll(bannersSearched.stream().map(Banners::getUrl).collect(Collectors.toList()));
+		System.out.println("-----------------BANNERS ENCONTRADOS-----------------");
+		urlsOfBanners.forEach(System.out::println);
+		System.out.println("-----------------------------------------------------");
 		
+		//Remover os banners da lista caso ja estejam salvos no banco!
+		urlsOfBanners.removeAll(bannersSearched.stream().map(Banners::getUrl).collect(Collectors.toList()));
 		
 		List<Banners> bannersToAddInDb = new ArrayList<>();
 		
-		System.out.println("-----------------BANNERS ENCONTRADOS-----------------");
 		urlsOfBanners.forEach(x -> {
 			bannersToAddInDb.add(new Banners(null,x,null));
-			System.out.println(x);
 		});
-		System.out.println("-----------------------------------------------------");
 		
 		//Salvar banners que nao foram salvos ainda no banco de acordo com a leitura anterior.
 		saveBanners(bannersToAddInDb);
-		
 		
 		System.out.println("--------------------BANNERS NOVOS--------------------");
 		//Envia mensagem dos banners reconhecidos
@@ -115,7 +116,6 @@ public class Program {
 			System.out.println(x.getUrl());	
 		});
 		System.out.println("-----------------------------------------------------");
-		
 
 		//Envia mensagem dos banners reconhecidos
 		bannersToAddInDb.forEach(x -> {
