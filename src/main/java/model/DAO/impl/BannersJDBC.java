@@ -8,7 +8,8 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import db.DB;
 import db.DbException;
@@ -53,7 +54,7 @@ public class BannersJDBC implements BannersDAO {
 	}
 
 	@Override
-	public List<Banners> findBanners(Integer daysAgo) {
+	public Set<Banners> findBanners(Integer daysAgo) {
 		PreparedStatement st = null;
 		ResultSet rs = null;
 		
@@ -68,7 +69,7 @@ public class BannersJDBC implements BannersDAO {
 			//System.out.println(st);
 			rs = st.executeQuery();
 			
-			List<Banners> list = new ArrayList<>();
+			Set<Banners> list = new HashSet<>();
 
 			// se veio algum resultado
 			while (rs.next()) {

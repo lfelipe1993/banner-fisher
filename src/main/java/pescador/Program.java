@@ -9,17 +9,19 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import model.DAO.BannersDAO;
 import model.DAO.DAOFactory;
 import model.banners.Banners;
+import pescador.observer.MsgNotificationListener;
 
 public class Program {
 	//Dias do IF padrão
-	static Integer dAnterior = -5;
-	static Integer dPosterior = 5;
+	static Integer dAnterior = -1;
+	static Integer dPosterior = 1;
 	
 	public static void main(String[] args) {
 
@@ -44,12 +46,20 @@ public class Program {
 		});
 		
 		//carregar banners ja visualizados
-		List<Banners> bannersSearched = buscaBanners(dAnterior); 
+		Set<Banners> bannersSearched = buscaBanners(dAnterior); 
 		
 		System.out.println("dAnterior: " + dAnterior + " | dPosterior: " + dPosterior);
 		
+		//List que sera populada com todos os banners com status http 200
 		List<String> urlsOfBanners = new ArrayList();
+		
+		//Lista a ser populada com os banners que vao para o banco de dados
+		List<Banners> bannersToAddInDb = new ArrayList<>();
 
+		//Instanciando classe :)
+		CheckMsg checkMsg = new CheckMsg();
+		checkMsg.events.subscribe("sendmsg", new MsgNotificationListener());
+		
 		List<Lojista> lojistasList = Stream.of(Lojista.values()).collect(Collectors.toList());
 		List<Parceiro> parceirosList = Stream.of(Parceiro.values()).collect(Collectors.toList());
 
@@ -82,8 +92,9 @@ public class Program {
 						}
 
 						if(BannersSearch.getBanners(builderUrl) == 200) {
-							urlsOfBanners.add(builderUrl);
-							System.out.println("ADICIONADO A LISTAGEM!");
+							//urlsOfBanners.add(builderUrl);
+							System.out.println("VERIFICANDO! [VerifyMsg]");
+							checkMsg.VerifyMsg(builderUrl, urlsOfBanners,bannersSearched,bannersToAddInDb);
 							System.out.println("---------------------------------------------------------");
 						}
 
@@ -98,14 +109,14 @@ public class Program {
 		urlsOfBanners.forEach(System.out::println);
 		System.out.println("-----------------------------------------------------");
 		
-		//Remover os banners da lista caso ja estejam salvos no banco!
+		/*Remover os banners da lista caso ja estejam salvos no banco!
 		urlsOfBanners.removeAll(bannersSearched.stream().map(Banners::getUrl).collect(Collectors.toList()));
 		
 		List<Banners> bannersToAddInDb = new ArrayList<>();
 		
 		urlsOfBanners.forEach(x -> {
 			bannersToAddInDb.add(new Banners(null,x,null));
-		});
+		});*/
 		
 		//Salvar banners que nao foram salvos ainda no banco de acordo com a leitura anterior.
 		saveBanners(bannersToAddInDb);
@@ -118,16 +129,16 @@ public class Program {
 		System.out.println("-----------------------------------------------------");
 
 		//Envia mensagem dos banners reconhecidos
-		bannersToAddInDb.forEach(x -> {
+		/*bannersToAddInDb.forEach(x -> {
 			TelegramNotifier.sendNotification(x.getUrl());
-		});
+		});*/
 		
 		System.out.println("Execução terminada [" + LocalDateTime.now() + "]");
 	}
 
-	public static List<Banners> buscaBanners(Integer daysAgo) {
+	public static Set<Banners> buscaBanners(Integer daysAgo) {
 		BannersDAO factory = DAOFactory.CreateBannersDao();
-		List<Banners> list = factory.findBanners(daysAgo);
+		Set<Banners> list = factory.findBanners(daysAgo);
 		return list;
 	}
 	
