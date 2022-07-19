@@ -3,7 +3,8 @@ package pescador;
 public enum Parceiro {
 	LIVELO("livelo", "https://www.pontofrio-imagens.com.br/HotSite/", "B2B_Livelo",4,10),
 	ESFERA("Esfera", "https://www.casasbahia-imagens.com.br/HotSite/", "B2B_Esfera",4,10), 
-	AZUL("tudoazul", "https://www.extra-imagens.com.br/HotSite/", "B2B_TudoAzul",8,25);
+	AZUL("tudoazul", "https://www.extra-imagens.com.br/HotSite/", "B2B_TudoAzul",8,25),
+	DOTZ("dotz", "https://www.extra-imagens.com.br/HotSite/", "B2B_Dotz",10,25);
 
 
 	private String descricao;

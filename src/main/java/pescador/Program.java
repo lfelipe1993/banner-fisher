@@ -137,6 +137,12 @@ public class Program {
 	}
 
 	public static Set<Banners> buscaBanners(Integer daysAgo) {
+		
+		//Em buscas para datas futuras da problema. Tem que ser no minimo 15 dias no passado.
+		if(daysAgo >= -5) {
+			daysAgo = -15;
+		}
+		
 		BannersDAO factory = DAOFactory.CreateBannersDao();
 		Set<Banners> list = factory.findBanners(daysAgo);
 		return list;
